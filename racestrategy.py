@@ -134,7 +134,7 @@ def get_strategies(
         laps_at_zero = calculate_laps(RACE_LENGTH, lap_time, full=False)
 
         out[strat] = StrategyResult(
-            laps_at_zero, laps, fuel, time, pit_stop_time
+            laps_at_zero, laps, fuel, time, pit_stop_time + time_lost_driving_through_pits
         )
 
     return OrderedDict(
