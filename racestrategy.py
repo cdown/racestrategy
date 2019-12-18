@@ -32,7 +32,7 @@ import statistics
 TIME_TO_CHANGE_TYRES = timedelta(seconds=20)
 TIME_TO_FILL_ONE_LITRE = timedelta(microseconds=190000)
 
-FUEL_SAFETY_BUFFER_LITRES = 3
+FUEL_SAFETY_BUFFER_LITRES = 1
 RACE_LENGTH = timedelta(hours=1)
 STRATEGY_ARGS = ["soft-50", "med-50", "med-99"]
 TIME_LOST_AT_RACE_START = timedelta(seconds=5)
