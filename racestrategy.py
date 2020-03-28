@@ -44,6 +44,7 @@ StrategyResult = namedtuple(
         "laps_at_zero",
         "total_laps",
         "total_fuel",
+        "normalised_lap_time",
         "total_time",
         "pit_stop_time",
     ],
@@ -52,9 +53,7 @@ StrategyResult = namedtuple(
 
 def msm_to_tds(td_str):
     t = datetime.strptime(td_str, "%M:%S.%f")
-    delta = timedelta(
-        minutes=t.minute, seconds=t.second, microseconds=t.microsecond
-    )
+    delta = timedelta(minutes=t.minute, seconds=t.second, microseconds=t.microsecond)
     return delta
 
 
@@ -102,9 +101,7 @@ def calculate_lost_time(pit_stop_time, time_lost_driving_through_pits):
     )
 
 
-def get_strategies(
-    strategies_to_times, litres_per_lap, time_lost_driving_through_pits
-):
+def get_strategies(strategies_to_times, litres_per_lap, time_lost_driving_through_pits):
     out = {}
 
     for strat, lap_times in strategies_to_times.items():
@@ -134,7 +131,12 @@ def get_strategies(
         laps_at_zero = calculate_laps(RACE_LENGTH, lap_time, full=False)
 
         out[strat] = StrategyResult(
-            laps_at_zero, laps, fuel, time, pit_stop_time + time_lost_driving_through_pits
+            laps_at_zero,
+            laps,
+            fuel,
+            lap_time,
+            time,
+            pit_stop_time + time_lost_driving_through_pits,
         )
 
     return OrderedDict(
@@ -145,11 +147,7 @@ def get_strategies(
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "-l",
-        "--litres-per-lap",
-        help="litres per lap",
-        type=float,
-        required=True,
+        "-l", "--litres-per-lap", help="litres per lap", type=float, required=True,
     )
     parser.add_argument(
         "-p",
@@ -160,10 +158,7 @@ def parse_args():
     )
     for arg in STRATEGY_ARGS:
         parser.add_argument(
-            "--{}".format(arg),
-            metavar="TIME",
-            action="append",
-            type=msm_to_tds,
+            "--{}".format(arg), metavar="TIME", action="append", type=msm_to_tds,
         )
     return parser.parse_args()
 
@@ -182,14 +177,13 @@ def main():
     print("From best to worst strategy:\n")
 
     for strat, res in get_strategies(
-        strategies_to_times,
-        args.litres_per_lap,
-        args.time_lost_driving_through_pits,
+        strategies_to_times, args.litres_per_lap, args.time_lost_driving_through_pits,
     ).items():
         print("{}:".format(strat))
         print("Laps at 0 seconds: {:.2f}".format(res.laps_at_zero))
         print("Total laps: {}".format(res.total_laps))
         print("Total fuel: {}".format(res.total_fuel))
+        print("Normalised lap time: {}".format(res.normalised_lap_time))
         print("Total time: {}".format(res.total_time))
         print("Pit stop time: {}\n".format(res.pit_stop_time))
 
