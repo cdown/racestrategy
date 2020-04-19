@@ -36,8 +36,7 @@ FUEL_SAFETY_BUFFER_LITRES = 1
 FUEL_SAFETY_EXTRA_LAP_THRESHOLD = 0.15
 RACE_LENGTH = timedelta(hours=1)
 STRATEGY_ARGS = ["soft-50", "med-50", "med-99"]
-TIME_LOST_AT_RACE_START = timedelta(seconds=5)
-TIME_SAFETY_BUFFER = timedelta(seconds=10)
+TIME_LOST_AT_RACE_START = timedelta(seconds=3)
 
 StrategyResult = namedtuple(
     "StrategyResult",
@@ -92,14 +91,7 @@ def calculate_total_time(laps, lap_time):
 
 
 def calculate_lost_time(pit_stop_time, time_lost_driving_through_pits):
-    return (
-        TIME_LOST_AT_RACE_START
-        + time_lost_driving_through_pits
-        + pit_stop_time
-        # To be "safer", we need to assume we're further ahead than we actually
-        # are estimated to be, so remove this from the lost time.
-        - TIME_SAFETY_BUFFER
-    )
+    return TIME_LOST_AT_RACE_START + time_lost_driving_through_pits + pit_stop_time
 
 
 def get_strategies(strategies_to_times, litres_per_lap, time_lost_driving_through_pits):
