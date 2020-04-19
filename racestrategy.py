@@ -176,11 +176,22 @@ def main():
 
     print("From best to worst strategy:\n")
 
+    fastest_time = None
+    fastest_laps = None
+
     for strat, res in get_strategies(
         strategies_to_times, args.litres_per_lap, args.time_lost_driving_through_pits,
     ).items():
         print("{}:".format(strat))
         print("Laps at 0 seconds: {:.2f}".format(res.laps_at_zero))
+
+        if not fastest_time:
+            fastest_laps = res.laps_at_zero  # might be fewer if slower
+            fastest_time = fastest_laps * res.normalised_lap_time
+        else:
+            our_time = fastest_laps * res.normalised_lap_time
+            print("Time difference from fastest: {}".format(our_time - fastest_time))
+
         print("Total laps: {}".format(res.total_laps))
         print("Total fuel: {}".format(res.total_fuel))
         print("Normalised lap time: {}".format(res.normalised_lap_time))
