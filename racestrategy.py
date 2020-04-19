@@ -33,6 +33,7 @@ TIME_TO_CHANGE_TYRES = timedelta(seconds=20)
 TIME_TO_FILL_ONE_LITRE = timedelta(microseconds=190000)
 
 FUEL_SAFETY_BUFFER_LITRES = 1
+FUEL_SAFETY_EXTRA_LAP_THRESHOLD = 0.15
 RACE_LENGTH = timedelta(hours=1)
 STRATEGY_ARGS = ["soft-50", "med-50", "med-99"]
 TIME_LOST_AT_RACE_START = timedelta(seconds=5)
@@ -126,9 +127,16 @@ def get_strategies(strategies_to_times, litres_per_lap, time_lost_driving_throug
         )
 
         laps = calculate_laps(RACE_LENGTH, lap_time)
-        fuel = calculate_fuel(litres_per_lap, laps)
-        time = calculate_total_time(laps, lap_time)
         laps_at_zero = calculate_laps(RACE_LENGTH, lap_time, full=False)
+
+        fuel_laps = laps
+        if math.ceil(laps_at_zero) - laps_at_zero <= FUEL_SAFETY_EXTRA_LAP_THRESHOLD:
+            # If someone goes faster we might do one more lap. Bump the fuel to
+            # compensate.
+            fuel_laps += 1
+
+        fuel = calculate_fuel(litres_per_lap, fuel_laps)
+        time = calculate_total_time(laps, lap_time)
 
         out[strat] = StrategyResult(
             laps_at_zero,
