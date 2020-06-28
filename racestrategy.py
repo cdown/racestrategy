@@ -34,9 +34,22 @@ TIME_TO_FILL_ONE_LITRE = timedelta(microseconds=190000)
 
 FUEL_SAFETY_BUFFER_LITRES = 1
 FUEL_SAFETY_EXTRA_LAP_THRESHOLD = 0.15
-RACE_LENGTH = timedelta(hours=1)
 STRATEGY_ARGS = ["soft-50", "med-50", "med-99"]
 TIME_LOST_AT_RACE_START = timedelta(seconds=3)
+
+# Obviously not scientific. Time is how much deterioration in 30 minutes.
+#
+# - Soft 50 at Road Atlanta during race: 1.4%
+# - Med 99 at Brands Hatch during race (second stint): 0.4%
+#
+# We also don't really use it scientifically, since it's not biased based on
+# --race-time, but it's mostly just to get the order of magnitude.
+TYRE_DETERIORATION = {
+    "soft_50": 1.4,
+    "med_50": 0.4,
+    "med_99": 0.4,
+}
+
 
 StrategyResult = namedtuple(
     "StrategyResult",
@@ -103,6 +116,12 @@ def get_strategies(
         raw_lap_time = timedelta(
             seconds=statistics.mean([x.total_seconds() for x in lap_times])
         )
+
+        # Add however much deterioration there is for this tyre strategy. So if
+        # there's 2% deterioration, we bump the average by 1% to get the right
+        # value.
+        add_time = raw_lap_time / 100 * (TYRE_DETERIORATION[strat] / 2)
+        raw_lap_time += add_time
 
         # This is naive, as it doesn't take into consideration the pit stop
         # time required, yet. However, we need it to get a baseline for the
