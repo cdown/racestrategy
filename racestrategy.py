@@ -94,7 +94,9 @@ def calculate_lost_time(pit_stop_time, time_lost_driving_through_pits):
     return TIME_LOST_AT_RACE_START + time_lost_driving_through_pits + pit_stop_time
 
 
-def get_strategies(strategies_to_times, litres_per_lap, time_lost_driving_through_pits):
+def get_strategies(
+    race_time, strategies_to_times, litres_per_lap, time_lost_driving_through_pits
+):
     out = {}
 
     for strat, lap_times in strategies_to_times.items():
@@ -106,7 +108,7 @@ def get_strategies(strategies_to_times, litres_per_lap, time_lost_driving_throug
         # time required, yet. However, we need it to get a baseline for the
         # fuel (since fuel time also may eat into the total time), and it will
         # always be more pessimistic than the actual number of laps.
-        naive_laps = calculate_laps(RACE_LENGTH, raw_lap_time)
+        naive_laps = calculate_laps(race_time, raw_lap_time)
         naive_fuel = calculate_fuel(litres_per_lap, naive_laps)
 
         # Now that we know how long we'll spend idle in the pit, driving
@@ -118,8 +120,8 @@ def get_strategies(strategies_to_times, litres_per_lap, time_lost_driving_throug
             / naive_laps
         )
 
-        laps = calculate_laps(RACE_LENGTH, lap_time)
-        laps_at_zero = calculate_laps(RACE_LENGTH, lap_time, full=False)
+        laps = calculate_laps(race_time, lap_time)
+        laps_at_zero = calculate_laps(race_time, lap_time, full=False)
 
         fuel_laps = laps
         if math.ceil(laps_at_zero) - laps_at_zero <= FUEL_SAFETY_EXTRA_LAP_THRESHOLD:
@@ -156,10 +158,19 @@ def parse_args():
         type=msm_to_tds,
         default=timedelta(seconds=10),
     )
+    parser.add_argument(
+        "-t",
+        "--race-time",
+        help="total race minutes (default: 60)",
+        type=lambda minutes: timedelta(minutes=int(minutes)),
+        default=timedelta(hours=1),
+    )
+
     for arg in STRATEGY_ARGS:
         parser.add_argument(
             "--{}".format(arg), metavar="TIME", action="append", type=msm_to_tds,
         )
+
     return parser.parse_args()
 
 
@@ -174,13 +185,16 @@ def main():
         if times:
             strategies_to_times[arg] = times
 
-    print("From best to worst strategy:\n")
+    print("From best to worst strategy for a race lasting {}:\n".format(args.race_time))
 
     fastest_time = None
     fastest_laps = None
 
     for strat, res in get_strategies(
-        strategies_to_times, args.litres_per_lap, args.time_lost_driving_through_pits,
+        args.race_time,
+        strategies_to_times,
+        args.litres_per_lap,
+        args.time_lost_driving_through_pits,
     ).items():
         print("{}:".format(strat))
         print("Laps at 0 seconds: {:.2f}".format(res.laps_at_zero))
