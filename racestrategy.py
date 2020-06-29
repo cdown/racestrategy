@@ -82,7 +82,8 @@ def get_pit_stop_time_for_strategy(strategy, litres):
         "med_50": refill_time / 2,
         # Start: 100% required fuel, mediums.
         # Pit stop: 1l fuel, KEEP mediums.
-        "med_99": TIME_TO_FILL_ONE_LITRE,
+        # It seems minimum fuel time is clamped at 1s?
+        "med_99": timedelta(seconds=1),
     }
 
     return out[strategy]
