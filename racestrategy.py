@@ -20,6 +20,10 @@ To get the times for each strategy option, I suggest the following procedure:
 5. Do 5 laps on mediums, ~99% fuel.
 
 Try to go for consistent laps to get better data.
+
+TODO:
+
+- Is the 1s minimum pit time actually always there?
 """
 
 import argparse
