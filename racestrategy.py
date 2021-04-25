@@ -60,6 +60,7 @@ StrategyResult = namedtuple(
     [
         "laps_at_zero",
         "total_laps",
+        "fuel_laps",
         "total_fuel",
         "normalised_lap_time",
         "total_time",
@@ -159,6 +160,7 @@ def get_strategies(
         out[strat] = StrategyResult(
             laps_at_zero,
             laps,
+            fuel_laps,
             fuel,
             lap_time,
             time,
@@ -230,7 +232,7 @@ def main():
             our_time = fastest_laps * res.normalised_lap_time
             print("Time difference from fastest: {}".format(our_time - fastest_time))
 
-        print("Total laps: {}".format(res.total_laps))
+        print("Total laps: {} (fuel laps: {})".format(res.total_laps, res.fuel_laps))
         print("Total fuel: {}".format(res.total_fuel))
         print("Normalised lap time: {}".format(res.normalised_lap_time))
         print("Total time: {}".format(res.total_time))
